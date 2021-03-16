@@ -144,6 +144,146 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-TCP协议分析" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="TCP协议"><a href="#TCP协议" class="headerlink" title="TCP协议"></a>TCP协议</h1><h3 id="1-TCP协议的特点"><a href="#1-TCP协议的特点" class="headerlink" title="1. TCP协议的特点"></a>1. TCP协议的特点</h3><ul>
+<li>TCP是面向连接的传输层协议</li>
+<li>每条TCP连接只能有两个端点（点对点）</li>
+<li>TCP提供可靠的交付服务，保证传送的数据无差错、不丢失、不重复、有序</li>
+<li>TCP提供全双工通信（TCP连接的两端都设有发送缓存和接收缓存，用来临时存放双向通信的数据）<blockquote>
+<p>发送缓存存储的数据：①应用程序准备发送的数据；②已发送但未收到确认的数据<br>接收缓存存储的数据：①按序到达但未被读取的数据；②未按序到达的数据</p>
+</blockquote>
+</li>
+<li>TCP是面向字节流的，应用程序和TCP的交互时一次一个数据块，TCP把收到的数据视为一连串的无结构的字节流</li>
+</ul>
+<hr>
+<h3 id="2-TCP报文段"><a href="#2-TCP报文段" class="headerlink" title="2. TCP报文段"></a>2. TCP报文段</h3><p><img src="https://s3.ax1x.com/2021/03/16/6r7pBF.png" alt="TCP报文结构"><br>TCP报文段既可以用来运载数据，也可以用来建立连接、释放连接、应答<br>各字段意义如下：</p>
+<ol>
+<li> 源端口、目的端口：各占2B</li>
+<li> 序号：4B，TCP给传输的数据中的每个字节都编上一个序号，序号字段是本报文段发送的数据的第一个字节的序号</li>
+<li> 确认号：4B，期望对方收到的下一个报文段的第一个字节的序号</li>
+<li> 数据偏移：占4位，表示首部长度，单位是4B</li>
+<li> 保留字段：占6位，保留为今后使用，目前置0</li>
+<li> 紧急位URG：URG=1表明紧急指针字段有效</li>
+<li> 确认位ACK：ACK=1表明确认号字段有效（连接建立后ACK置1）</li>
+<li> 推送位PSH：PSH=1时，尽快交付，不要等到缓存填满</li>
+<li> 复位位RST：RST=1时，表明TCP连接出错，必须释放连接重新建立</li>
+<li> 同步位SYN：SYN=1表明这是连接请求/连接接收报文    * SYN=1,ACK=0：连接请求    * SYN=1,ACK=1：连接接收</li>
+<li> 终止位FIN：FIN=1表明数据发送完毕，释放连接</li>
+<li> 窗口字段：占2B，指出现在允许对方发送的数据量，单位为字节</li>
+<li> 校验和：占2B，校验首部和数据部分。同UDP校验类似，加上伪首部（协议字段6）</li>
+<li> 紧急指针字段：占2B，报文段中紧急数据有多少字节（紧急数据放在数据部分最前）</li>
+<li> 选项字段：长度可变，TCP最初只规定了MSS（数据字段最大长度）</li>
+<li> 填充字段：使首部长度为4B整数倍</li>
+</ol>
+<hr>
+<h3 id="3-TCP连接管理"><a href="#3-TCP连接管理" class="headerlink" title="3. TCP连接管理"></a>3. TCP连接管理</h3><ol>
+<li> TCP连接的建立<br><img src="https://s3.ax1x.com/2021/03/16/6rTj10.png" alt="三次握手"><br>第一步：客户端向服务器发送TCP连接请求，不含应用层数据，SYN=1，客户机随机选择一个起始序号seq=x<br>第二步：服务器收到连接请求后，如同意建立连接，则向客户机发送连接确认，并为该TCP连接分配TCP缓存和变量。在确认报文段中，SYN=1,ACK=1,ack=x+1,服务器随机一个起始序号seq=y。确认报文段同样不含应用层数据<br>第三步：客户机收到服务器连接确认后，再向服务器给出确认，并给该连接分配缓存和变量。ACK=1,seq=x+1,ack=y+1。该报文段可以携带数据</li>
+<li> TCP连接的释放<br><img src="https://s3.ax1x.com/2021/03/16/6rTvcV.png" alt="四次挥手"><br>第一步：客户机打算关闭连接时，向服务器发送连接释放报文，并停止发送数据，主动关闭TCP连接。FIN=1,seq=u<br>第二步：服务器接收到连接释放报文后，发送确认报文。ACK=1,ack=u+1,seq=v。此时，从客户机到服务器的连接被释放，TCP处于半关闭状态。但服务器发送数据，客户端仍要接收。<br>第三步：服务器数据传输完毕后，向客户机发送连接释放报文。FIN=1,ACK=1,seq=w,ack=u+1<br>第四步：客户机对服务器发送确认。ACK=1,seq=u+1,ack=w+1。此时TCP连接还未释放，必须经过时间等待计时器设置时间2MSL后，A才进入连接关闭状态</li>
+</ol>
+<ul>
+<li>总结：<br>连接建立——三次握手<br>SYN=1,seq=x<br>SYN=1,ACK=1,seq=y,ack=x+1<br>ACK=1,seq=x+1,ack=y+1<br>连接释放——四次挥手<br>FIN=1,seq=u<br>ACK=1,seq=v,ack=u+1<br>FIN=1,ACK=1,seq=w,ack=u+1<br>ACK=1,seq=u+1,ack=w+1</li>
+</ul>
+<hr>
+<h3 id="4-TCP可靠传输"><a href="#4-TCP可靠传输" class="headerlink" title="4. TCP可靠传输"></a>4. TCP可靠传输</h3><p>TCP使用校验、序号、确认、重传保证可靠传输</p>
+<ol>
+<li> 校验: TCP校验机制同UDP</li>
+<li> 序号: 给数据流中的每个字节编上一个序号</li>
+<li> 确认: 接收方期望从确认号的位置接收数据。发送方缓存区会继续存储那些已发送但未收到确认的报文段，以便重传。TCP默认使用累计确认</li>
+<li> 重传: 两种情况导致重传：超时，冗余ACK</li>
+</ol>
+<ul>
+<li>超时<blockquote>
+<p>TCP每发送一个报文段，就设置一次计时器，设置的时间到期而未收到确认时，就要重传该报文段.<br>传输层往返时延不确定，采用自适应算法，记录报文段的往返时间RTT，TCP保留RTT的加权平均往返时间RTTs,RTTs虽时间变化，超时时间RTO略大于RTTs</p>
+</blockquote>
+</li>
+<li>冗余ACK<blockquote>
+<p>每当一个比期望序号大的失序报文到达时，就发送一次冗余ACK，累计收到3次冗余ACK，就进行重传。【快速重传】</p>
+</blockquote>
+</li>
+</ul>
+<hr>
+<h3 id="5-TCP流量控制"><a href="#5-TCP流量控制" class="headerlink" title="5. TCP流量控制"></a>5. TCP流量控制</h3><ul>
+<li>通过流量控制，避免接收方缓存区溢出</li>
+<li>TCP使用一种基于滑动窗口协议的流量控制机制</li>
+<li>在通信过程中，接收方根据接收缓存的大小，调整确认报文段的窗口字段值，从而动态的调整发送方的发送窗口大小，称为接收窗口rwnd。同时，发送方还会根据当前网络拥塞状态估计一个窗口值，称为拥塞窗口cwnd。</li>
+<li>传输层定义端到端用户的流量控制，窗口大小可变；数据链路层定义两个相邻结点的流量控制，窗口大小不可变</li>
+</ul>
+<p><img src="https://s3.ax1x.com/2021/03/16/6r7SnU.png" alt="TCP流量控制"></p>
+<hr>
+<h3 id="6-TCP拥塞控制"><a href="#6-TCP拥塞控制" class="headerlink" title="6. TCP拥塞控制"></a>6. TCP拥塞控制</h3><p>拥塞控制方法：慢开始、拥塞避免、快重传、快恢复</p>
+<p>发送窗口上限值=min[rwnd,cwnd]</p>
+<ol>
+<li><strong>慢开始和拥塞避免</strong><ol>
+<li><strong>慢开始算法</strong>：TCP连接刚建立时，令cwnd=1,每收到一个报文段的确认，将cwnd加1.一个RTT后，cwnd=2*cwnd,到达阈值ssthresh后，改用拥塞避免算法</li>
+<li><strong>拥塞避免算法</strong>：1个RTT拥塞窗口加1，按线性规律增长。出现超时后，让慢开始阈值ssthresh变为当前cwnd的一半</li>
+</ol>
+<ul>
+<li>cwnd &lt; ssthresh时，使用慢开始算法</li>
+<li>cwnd &gt; ssthresh时，使用拥塞避免算法</li>
+<li>cwnd = ssthresh时，两种都可</li>
+</ul>
+<ol start="3">
+<li><strong>网络拥塞处理</strong>：出现拥塞，将ssthresh设为cwnd/2，cwnd设为1，执行慢开始算法。（迅速减少主机发送到网络的分组数）</li>
+</ol>
+<ul>
+<li>在慢开始阶段，若2cwnd &gt; ssthresh，则下一个RTT令cwnd=ssthresh</li>
+</ul>
+</li>
+</ol>
+<p><img src="https://s3.ax1x.com/2021/03/16/6rTxXT.png" alt="慢开始与拥塞避免"></p>
+<ol start="2">
+<li><strong>快重传和快恢复</strong><ol>
+<li>快重传：发送方收到3个冗余ACK，立刻重传</li>
+<li>快恢复：发送方收到3个冗余ACK，将慢开始阈值ssthresh设为cwnd/2,与慢开始不同的是，cwnd从ssthresh开始执行拥塞避免<br><img src="https://s3.ax1x.com/2021/03/16/6rTXpq.png" alt="快重传与快回复"></li>
+</ol>
+</li>
+</ol>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2021/03/16/TCP%E5%8D%8F%E8%AE%AE%E5%88%86%E6%9E%90/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-photo" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
