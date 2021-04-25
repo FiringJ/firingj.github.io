@@ -20,12 +20,12 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
 
 <script class="next-config" data-name="main" type="application/json">{&quot;hostname&quot;:&quot;firingj.github.io&quot;,&quot;root&quot;:&quot;&#x2F;&quot;,&quot;images&quot;:&quot;&#x2F;images&quot;,&quot;scheme&quot;:&quot;Muse&quot;,&quot;version&quot;:&quot;8.3.0&quot;,&quot;exturl&quot;:false,&quot;sidebar&quot;:{&quot;position&quot;:&quot;left&quot;,&quot;display&quot;:&quot;post&quot;,&quot;padding&quot;:18,&quot;offset&quot;:12},&quot;copycode&quot;:false,&quot;bookmark&quot;:{&quot;enable&quot;:false,&quot;color&quot;:&quot;#222&quot;,&quot;save&quot;:&quot;auto&quot;},&quot;fancybox&quot;:false,&quot;mediumzoom&quot;:false,&quot;lazyload&quot;:false,&quot;pangu&quot;:false,&quot;comments&quot;:{&quot;style&quot;:&quot;tabs&quot;,&quot;active&quot;:null,&quot;storage&quot;:true,&quot;lazyload&quot;:false,&quot;nav&quot;:null},&quot;motion&quot;:{&quot;enable&quot;:true,&quot;async&quot;:false,&quot;transition&quot;:{&quot;post_block&quot;:&quot;fadeIn&quot;,&quot;post_header&quot;:&quot;fadeInDown&quot;,&quot;post_body&quot;:&quot;fadeInDown&quot;,&quot;coll_header&quot;:&quot;fadeInLeft&quot;,&quot;sidebar&quot;:&quot;fadeInUp&quot;}},&quot;prism&quot;:false,&quot;i18n&quot;:{&quot;placeholder&quot;:&quot;Searching...&quot;,&quot;empty&quot;:&quot;We didn&#39;t find any results for the search: ${query}&quot;,&quot;hits_time&quot;:&quot;${hits} results found in ${time} ms&quot;,&quot;hits&quot;:&quot;${hits} results found&quot;}}</script>
-<meta name="description" content="TCP协议1. TCP协议的特点 TCP是面向连接的传输层协议 每条TCP连接只能有两个端点（点对点） TCP提供可靠的交付服务，保证传送的数据无差错、不丢失、不重复、有序 TCP提供全双工通信（TCP连接的两端都设有发送缓存和接收缓存，用来临时存放双向通信的数据） 发送缓存存储的数据：①应用程序准备发送的数据；②已发送但未收到确认的数据接收缓存存储的数据：①按序到达但未被读取的数据；②未按序到达">
+<meta name="description" content="title: TCP协议分析categories: 计算机网络 TCP协议1. TCP协议的特点 TCP是面向连接的传输层协议 每条TCP连接只能有两个端点（点对点） TCP提供可靠的交付服务，保证传送的数据无差错、不丢失、不重复、有序 TCP提供全双工通信（TCP连接的两端都设有发送缓存和接收缓存，用来临时存放双向通信的数据） 发送缓存存储的数据：①应用程序准备发送的数据；②已发送但未收到确认的">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Firing的个人博客">
 <meta property="og:url" content="https://firingj.github.io/2021/03/16/TCP%E5%8D%8F%E8%AE%AE%E5%88%86%E6%9E%90/index.html">
 <meta property="og:site_name" content="Firing的个人博客">
-<meta property="og:description" content="TCP协议1. TCP协议的特点 TCP是面向连接的传输层协议 每条TCP连接只能有两个端点（点对点） TCP提供可靠的交付服务，保证传送的数据无差错、不丢失、不重复、有序 TCP提供全双工通信（TCP连接的两端都设有发送缓存和接收缓存，用来临时存放双向通信的数据） 发送缓存存储的数据：①应用程序准备发送的数据；②已发送但未收到确认的数据接收缓存存储的数据：①按序到达但未被读取的数据；②未按序到达">
+<meta property="og:description" content="title: TCP协议分析categories: 计算机网络 TCP协议1. TCP协议的特点 TCP是面向连接的传输层协议 每条TCP连接只能有两个端点（点对点） TCP提供可靠的交付服务，保证传送的数据无差错、不丢失、不重复、有序 TCP提供全双工通信（TCP连接的两端都设有发送缓存和接收缓存，用来临时存放双向通信的数据） 发送缓存存储的数据：①应用程序准备发送的数据；②已发送但未收到确认的">
 <meta property="og:locale">
 <meta property="og:image" content="https://s3.ax1x.com/2021/03/16/6r7pBF.png">
 <meta property="og:image" content="https://s3.ax1x.com/2021/03/16/6rTj10.png">
@@ -34,7 +34,7 @@
 <meta property="og:image" content="https://s3.ax1x.com/2021/03/16/6rTxXT.png">
 <meta property="og:image" content="https://s3.ax1x.com/2021/03/16/6rTXpq.png">
 <meta property="article:published_time" content="2021-03-16T00:56:10.381Z">
-<meta property="article:modified_time" content="2021-03-16T01:35:15.304Z">
+<meta property="article:modified_time" content="2021-04-25T07:33:31.358Z">
 <meta property="article:author" content="FiringJ">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://s3.ax1x.com/2021/03/16/6r7pBF.png">
@@ -207,10 +207,16 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2021-03-16 08:56:10 / Modified: 09:35:15" itemprop="dateCreated datePublished" datetime="2021-03-16T08:56:10+08:00">2021-03-16</time>
+      <time title="Created: 2021-03-16 08:56:10" itemprop="dateCreated datePublished" datetime="2021-03-16T08:56:10+08:00">2021-03-16</time>
     </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-04-25 15:33:31" itemprop="dateModified" datetime="2021-04-25T15:33:31+08:00">2021-04-25</time>
+      </span>
 
   
 </div>
@@ -222,7 +228,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <h1 id="TCP协议"><a href="#TCP协议" class="headerlink" title="TCP协议"></a>TCP协议</h1><h3 id="1-TCP协议的特点"><a href="#1-TCP协议的特点" class="headerlink" title="1. TCP协议的特点"></a>1. TCP协议的特点</h3><ul>
+        <p>title: TCP协议分析<br>categories: 计算机网络</p>
+<h1 id="TCP协议"><a href="#TCP协议" class="headerlink" title="TCP协议"></a>TCP协议</h1><h3 id="1-TCP协议的特点"><a href="#1-TCP协议的特点" class="headerlink" title="1. TCP协议的特点"></a>1. TCP协议的特点</h3><ul>
 <li>TCP是面向连接的传输层协议</li>
 <li>每条TCP连接只能有两个端点（点对点）</li>
 <li>TCP提供可靠的交付服务，保证传送的数据无差错、不丢失、不重复、有序</li>
